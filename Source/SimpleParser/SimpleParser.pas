@@ -380,6 +380,7 @@ type
     procedure InterfaceMemberList; virtual;
     procedure InterfaceSection; virtual;
     procedure InterfaceType; virtual;
+    procedure IsNotOp; virtual;
     procedure LabelDeclarationSection; virtual;
     procedure LabeledStatement; virtual;
     procedure LabelId; virtual;
@@ -392,6 +393,7 @@ type
     procedure MethodKind; virtual;
     procedure MultiplicativeOperator; virtual;
     procedure FormalParameterType; virtual;
+    procedure NotInOp; virtual;
     procedure NotOp; virtual;
     procedure NilToken; virtual;
     procedure Number; virtual;
@@ -907,6 +909,12 @@ end;
 procedure TmwSimplePasPar.NilToken;
 begin
   Expected(ptNil);
+end;
+
+procedure TmwSimplePasPar.NotInOp;
+begin
+  Expected(ptNot);
+  Expected(ptIn);
 end;
 
 procedure TmwSimplePasPar.NotOp;
@@ -3123,12 +3131,34 @@ begin
   //Expression -> SimpleExpression [RelOp SimpleExpression]...
   //So this needs to be able to repeat itself.
   case TokenID of
-  ptEqual, ptGreater, ptGreaterEqual, ptLower, ptLowerEqual, ptIn, ptIs,
-    ptNotEqual:
+  ptEqual, ptGreater, ptGreaterEqual, ptLower, ptLowerEqual, ptIn,
+    ptNotEqual, ptNot, ptIs:
     begin
       while TokenID in [ptEqual, ptGreater, ptGreaterEqual, ptLower, ptLowerEqual,
-        ptIn, ptIs, ptNotEqual{, ptColon}] do
+        ptIn, ptNotEqual{, ptColon}, ptNot, ptIs] do
       begin
+        if TokenID = ptNot then
+        begin
+          Lexer.InitAhead;
+          if Lexer.AheadTokenID = ptIn then
+          begin
+            NotInOp;
+            SimpleExpression;
+            Continue;
+          end;
+        end;
+
+        if TokenID = ptIs then
+        begin
+          Lexer.InitAhead;
+          if Lexer.AheadTokenID = ptNot then
+          begin
+            IsNotOp;
+            SimpleExpression;
+            Continue;
+          end;
+        end;
+
         RelativeOperator;
         SimpleExpression;
       end;
@@ -5596,6 +5626,12 @@ end;
 function TmwSimplePasPar.IsDefined(const ADefine: string): Boolean;
 begin
   Result := FLexer.IsDefined(ADefine);
+end;
+
+procedure TmwSimplePasPar.IsNotOp;
+begin
+  Expected(ptIs);
+  Expected(ptNot);
 end;
 
 procedure TmwSimplePasPar.ExportsNameId;

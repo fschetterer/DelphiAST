@@ -149,7 +149,7 @@ type
   end;
 
 const
-  OperatorsInfo: array [0..27] of TOperatorInfo =
+  OperatorsInfo: array [0..29] of TOperatorInfo =
     ((Typ: ntAddr;         Priority: 1; Kind: okUnary;  AssocType: atRight),
      (Typ: ntDeref;        Priority: 1; Kind: okUnary;  AssocType: atLeft),
      (Typ: ntGeneric;      Priority: 1; Kind: okBinary; AssocType: atRight),
@@ -177,7 +177,9 @@ const
      (Typ: ntLowerEqual;   Priority: 9; Kind: okBinary; AssocType: atRight),
      (Typ: ntGreaterEqual; Priority: 9; Kind: okBinary; AssocType: atRight),
      (Typ: ntIn;           Priority: 9; Kind: okBinary; AssocType: atRight),
-     (Typ: ntIs;           Priority: 9; Kind: okBinary; AssocType: atRight));
+     (Typ: ntNotIn;        Priority: 9; Kind: okBinary; AssocType: atRight),
+     (Typ: ntIs;           Priority: 9; Kind: okBinary; AssocType: atRight),
+     (Typ: ntIsNot;        Priority: 9; Kind: okBinary; AssocType: atRight));
 
 { TOperators }
 

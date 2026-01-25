@@ -159,11 +159,13 @@ type
     procedure InterfaceGUID; override;
     procedure InterfaceSection; override;
     procedure InterfaceType; override;
+    procedure IsNotOp; override;
     procedure LabelId; override;
     procedure MainUsesClause; override;
     procedure MainUsedUnitStatement; override;
     procedure MethodKind; override;
     procedure MultiplicativeOperator; override;
+    procedure NotInOp; override;
     procedure NotOp; override;
     procedure NilToken; override;
     procedure Number; override;
@@ -1676,6 +1678,12 @@ begin
   end;
 end;
 
+procedure TPasSyntaxTreeBuilder.IsNotOp;
+begin
+  FStack.AddChild(ntIsNot);
+  inherited;
+end;
+
 procedure TPasSyntaxTreeBuilder.LabelId;
 begin
   FStack.AddValuedChild(ntLabel, Lexer.Token);
@@ -1775,6 +1783,12 @@ end;
 procedure TPasSyntaxTreeBuilder.NilToken;
 begin
   FStack.AddChild(ntLiteral).SetAttribute(anType, AttributeValues[atNil]);
+  inherited;
+end;
+
+procedure TPasSyntaxTreeBuilder.NotInOp;
+begin
+  FStack.AddChild(ntNotIn);
   inherited;
 end;
 
