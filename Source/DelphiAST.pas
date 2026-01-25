@@ -114,6 +114,7 @@ type
     procedure DirectiveInline; override;
     procedure DispInterfaceForward; override;
     procedure DotOp; override;
+    procedure ElseExpression; override;
     procedure ElseStatement; override;
     procedure EmptyStatement; override;
     procedure EnumeratedType; override;
@@ -142,6 +143,7 @@ type
     procedure FunctionMethodName; override;
     procedure FunctionProcedureName; override;
     procedure GotoStatement; override;
+    procedure TernaryOp; override;
     procedure IfStatement; override;
     procedure Identifier; override;
     procedure ImplementationSection; override;
@@ -203,6 +205,7 @@ type
     procedure StringStatement; override;
     procedure StructuredType; override;
     procedure SubrangeType; override;
+    procedure ThenExpression; override;
     procedure ThenStatement; override;
     procedure TryStatement; override;
     procedure TypeArgs; override;
@@ -1158,6 +1161,16 @@ begin
   inherited;
 end;
 
+procedure TPasSyntaxTreeBuilder.ElseExpression;
+begin
+  FStack.Push(ntElse);
+  try
+    inherited;
+  finally
+    FStack.Pop;
+  end;
+end;
+
 procedure TPasSyntaxTreeBuilder.ElseStatement;
 begin
   FStack.Push(ntElse);
@@ -1492,6 +1505,16 @@ procedure TPasSyntaxTreeBuilder.Identifier;
 begin
   FStack.AddChild(ntIdentifier).SetAttribute(anName, Lexer.Token);
   inherited;
+end;
+
+procedure TPasSyntaxTreeBuilder.TernaryOp;
+begin
+  FStack.Push(ntTernaryOp);
+  try
+    inherited;
+  finally
+    FStack.Pop;
+  end;
 end;
 
 procedure TPasSyntaxTreeBuilder.IfStatement;
@@ -2310,6 +2333,16 @@ end;
 procedure TPasSyntaxTreeBuilder.SubrangeType;
 begin
   FStack.Push(ntType).SetAttribute(anName, AttributeValues[atSubRange]);
+  try
+    inherited;
+  finally
+    FStack.Pop;
+  end;
+end;
+
+procedure TPasSyntaxTreeBuilder.ThenExpression;
+begin
+  FStack.Push(ntThen);
   try
     inherited;
   finally
