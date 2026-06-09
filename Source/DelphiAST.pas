@@ -1,4 +1,4 @@
-unit DelphiAST;
+﻿unit DelphiAST;
 
 {$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
 
@@ -253,6 +253,10 @@ type
     class function Run(const FileName: string; InterfaceOnly: Boolean = False;
       IncludeHandler: IIncludeHandler = nil;
       OnHandleString: TStringEvent = nil): TSyntaxNode; reintroduce; overload; static;
+    class function Run(const FileName: string; InterfaceOnly: Boolean;
+      IncludeHandler: IIncludeHandler; CompilerVersion: Double): TSyntaxNode;
+        reintroduce; overload; static;
+    procedure InitDefinesForCompilerVersion(AVersion: Double);
     property Comments: TObjectList<TCommentNode> read FComments;
   end;
 
@@ -2104,6 +2108,74 @@ begin
   finally
     Stream.Free;
   end;
+end;
+
+class function TPasSyntaxTreeBuilder.Run(const FileName: string;
+  InterfaceOnly: Boolean; IncludeHandler: IIncludeHandler;
+  CompilerVersion: Double): TSyntaxNode;
+var
+  Stream: TStringStream;
+  Builder: TPasSyntaxTreeBuilder;
+begin
+  Stream := TStringStream.Create;
+  try
+    Stream.LoadFromFile(FileName);
+    Builder := TPasSyntaxTreeBuilder.Create;
+    Builder.InterfaceOnly := InterfaceOnly;
+    try
+      if CompilerVersion > 0 then
+        Builder.InitDefinesForCompilerVersion(CompilerVersion)
+      else
+        Builder.InitDefinesDefinedByCompiler;
+      Builder.IncludeHandler := IncludeHandler;
+      Result := Builder.Run(Stream);
+    finally
+      Builder.Free;
+    end;
+  finally
+    Stream.Free;
+  end;
+end;
+
+procedure TPasSyntaxTreeBuilder.InitDefinesForCompilerVersion(AVersion: Double);
+const
+  AllVersions: array[0..28] of Integer = (
+     90, 100, 120, 130, 140, 150, 160, 170, 180, 185, 190, 200,
+    210, 220, 230, 240, 250, 260, 270, 280, 290, 300,
+    310, 320, 330, 340, 350, 360, 370);
+var
+  TargetVer: Integer;
+  I: Integer;
+begin
+  ClearDefines;
+  // ── Platform / target (Windows 64-bit defaults) ────────────────────
+  AddDefine('WIN64');
+  AddDefine('WIN32');
+  AddDefine('MSWINDOWS');
+  AddDefine('CPUX64');
+  AddDefine('CPUX86');
+  AddDefine('CPU386');
+  AddDefine('CPU64BITS');
+  AddDefine('CPU32BITS');
+  AddDefine('CONDITIONALEXPRESSIONS');
+  AddDefine('UNICODE');
+  AddDefine('NATIVECODE');
+  AddDefine('CONSOLE');
+  AddDefine('ASSEMBLER');
+  AddDefine('PIC');
+  AddDefine('ELF');
+  AddDefine('UNDERSCOREIMPORTNAME');
+  AddDefine('WEAKREF');
+  AddDefine('WEAKINSTREF');
+  AddDefine('WEAKINTFREF');
+  AddDefine('EXTERNALLINKER');
+  AddDefine('PC_MAPPED_EXCEPTIONS');
+  AddDefine('ALIGN_STACK');
+  // ── Version defines: VER90 (Delphi 2) through VERxxx for target ──
+  TargetVer := Round(10 * AVersion);
+  for I := Low(AllVersions) to High(AllVersions) do
+    if AllVersions[I] <= TargetVer then
+      AddDefine('VER' + IntToStr(AllVersions[I]));
 end;
 
 function TPasSyntaxTreeBuilder.Run(SourceStream: TStream): TSyntaxNode;
